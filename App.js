@@ -2,8 +2,7 @@ import React from 'react';
 import { Image, TextInput, StyleSheet, Text, View } from 'react-native';
 
 class Movie extends React.Component {
-
-render() {
+  render() {
     return (
       <View style={styles.movie}>
         <Image style={styles.backdrop}
@@ -12,8 +11,8 @@ render() {
           <Image style={styles.poster} source={{uri: "http://image.tmdb.org/t/p/w500" + this.props.movie.poster_path}} />
         </View>
         <View style={styles.titleAndVotes}>
-          <Text style={styles.title}>Apollo 13</Text>
-          <Text style={styles.votes}>10.0</Text>
+          <Text style={styles.title}>{this.props.movie.title}</Text>
+          <Text style={styles.votes}>{this.props.movie.vote_average}</Text>
         </View>
         <Text style={styles.overview}>{this.props.movie.overview}</Text>
       </View>
@@ -22,39 +21,37 @@ render() {
 }
 
 export default class App extends React.Component {
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
     this.state = {
       movieNameInput: "",
-      movie: {
-        backdrop_path: null,
-        poster_path: null,
-        overview: null,
-        }
+      movie: null
     }
   }
-  movieNameInputChanged= (newText) =>  {
+  movieNameInputChanged = (text) => {
     this.setState({
-      movieNameInput: newText
+      movieNameInput: text
     });
   }
   movieNameInputSubmitted = () => {
-    console.debug(this.state)
     // Make the TMDB API call and receive results
     const apiKey = 'e9743662f5a39568d8e25225f2c97e09'
 
-    let url = "http://api.themoviedb.org/3/search/movie?query="
-    url    += this.state.movieNameInput
+    let url = "http://api.themoviedb.org/3/search/movie?query=" + this.state.movieNameInput
     url    += "&api_key=" + apiKey
     url    += "&language=en-US&page=1&include_adult=false"
 
+
     fetch(url).then(response => response.json()).then(json => {
 
-      this.movie.setState({
-          overview: json.results.overview
-          backdrop_path: json.results.overview
-          poster_path: json.results.overview
+      this.setState({
+        movie: json.results[0],
+        movieNameInput: ""
       });
+
+          console.debug(this.state.movie)
+
+
 
     });
   }
@@ -65,11 +62,10 @@ export default class App extends React.Component {
         <TextInput style={styles.movieNameInput}
                    placeholder="Enter a movie name!"
                    placeholderTextColor="#aaa"
-                   autoFocus={true}
                    value={this.state.movieNameInput}
                    onChangeText={this.movieNameInputChanged}
                    onSubmitEditing={this.movieNameInputSubmitted}
-                   />
+                   autoFocus={true} />
 
         {/* If there's a movie, use the Movie component to show it  */}
         {this.state.movie && <Movie movie={this.state.movie} />}
